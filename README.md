@@ -141,7 +141,6 @@ public class ClientBatchLoaderApp{
 
 1 . Ajout attribut environnement membre de la classe spring Environnement
 2 . Creation constructeur avec le parametre environnement 
-3 . Execution de l'application Spring
 
 ```java
 @SpringBootApplication
@@ -164,7 +163,7 @@ public class ClientBatchLoaderApp{
 
 ```
 
-4 . Definition du fichier de configuration necessaire au demarrage de l'application Spring Boot
+3 . Definition du fichier de configuration necessaire au demarrage de l'application Spring Boot
 
 
 ```java
@@ -178,7 +177,7 @@ public class ApplicationProperties {
 }
 ```
 
-5 . Creation des fichiers de configuration d'environnement (fichier .yml) et bugFix H2
+4 . Creation des fichiers de configuration d'environnement (fichier .yml) et bugFix H2
 
 
 */batch_v2/src/main/resources/config/application.yml*
@@ -318,7 +317,7 @@ public class FixedH2Dialect extends H2Dialect{
 }
 ```
 
-6 . Creation de la methode de selection de l'environnement à l'aide de la classes de constante
+5 . Creation de la methode de selection de l'environnement à l'aide de la classes de constante
 
 */batch_v2/src/main/java/config/Constants.java*
 
@@ -347,7 +346,7 @@ public class Constants {
 ```
 
 
-7 . Creation du fichier de configuration par default, initilisation de l'application et choix de l'environnement.
+6 . Creation du fichier de configuration par default, initilisation de l'application et choix de l'environnement.
 
 */batch_v2/src/main/java/config/DefaultProfileUtil.java*
 
@@ -406,7 +405,7 @@ public void initApplication() {
 }
 ```
 
-9 . Et enfin, allons creer une classe AppllicationWebXML necessaire au demarrage de l'application.
+7 . Et enfin, allons creer une classe AppllicationWebXML necessaire au demarrage de l'application.
 
 Il s'agit d'une classe Java d'assistance qui fournit une alternative à la création d'un fichier web.xml.
 Cela ne sera appelé que lorsque l'application est déployée sur un conteneur de servlet comme Tomcat, JBoss, etc.
@@ -415,12 +414,6 @@ Cela ne sera appelé que lorsque l'application est déployée sur un conteneur d
 */batch_v2/src/main/java/clientBatchLoader/ApplicationWebXML.java*
 
 ```java
-package clientBatchLoader;
-
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-
-import config.DefaultProfileUtil;
 public class ApplicationWebXML extends SpringBootServletInitializer {
 
 	@Override
@@ -432,6 +425,111 @@ public class ApplicationWebXML extends SpringBootServletInitializer {
 }
 
 ```
+
+### Configuration base de donnee H2
+
+*/SPRING_BATCH_V2/src/main/java/com/ruffin/SPRING_BATCH_V2/config/DatabaseConfiguration.java*
+
+```java
+/**
+ * 
+ * Configurations de base de données pour l'application Spring Batch.
+ *
+ */
+@Configuration
+@EnableJpaRepositories(value = "com.ruffin.SPRING_BATCH_V2", entityManagerFactoryRef = "batchEntityManagerFactory")
+@EnableTransactionManagement
+public class DatabaseConfiguration {
+
+	private final Logger log = LoggerFactory.getLogger(DatabaseConfiguration.class);
+
+	private final Environment environment;
+
+	public DatabaseConfiguration(Environment environment) {
+		this.environment = environment;
+	}
+	
+	@Bean(name = "batchDataSource")
+	public DataSource batchDataSource() {
+		HikariConfig hikariConfig = new HikariConfig();
+		hikariConfig.setJdbcUrl(environment.getRequiredProperty("spring.datasource.url"));
+		hikariConfig.setUsername(environment.getProperty("spring.datasource.username"));
+		hikariConfig.setPassword(environment.getProperty("spring.datasource.password"));
+		hikariConfig.setMinimumIdle(environment.getProperty("spring.datasource.min-idle", Integer.class, 2));
+		hikariConfig.setMaximumPoolSize(environment.getProperty("spring.datasource.max-active", Integer.class, 100));
+		hikariConfig.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
+		hikariConfig.setRegisterMbeans(true);
+		return new HikariDataSource(hikariConfig);
+	}
+
+	@Bean(name="batchJpaVendorAdapter")
+	private JpaVendorAdapter batchJpaVendorAdapter() {
+		return new HibernateJpaVendorAdapter();
+	}
+
+	@Bean(name = "batchEntityManagerFactory")
+	public LocalContainerEntityManagerFactoryBean batchEntityManagerFactory() {
+		LocalContainerEntityManagerFactoryBean emfBean = new LocalContainerEntityManagerFactoryBean();
+		emfBean.setDataSource(batchDataSource());
+		emfBean.setPackagesToScan("com.ruffin.SPRING_BATCH_V2");
+		emfBean.setBeanName("batchEntityManagerFactory");
+		emfBean.setJpaVendorAdapter(batchJpaVendorAdapter());
+
+		Properties jpaProperties = new Properties();
+		jpaProperties.put("hibernate.physical_naming_strategy",
+				environment.getProperty("spring.jpa.hibernate.naming.physical-strategy"));
+		jpaProperties.put("hibernate.hbm2ddl.auto", environment.getProperty("spring.jpa.hibernate.ddl-auto", "none"));
+		jpaProperties.put("hibernate.jdbc.fetch_size",
+				environment.getProperty("spring.jpa.properties.hibernate.jdbc.fetch_size", "200"));
+		Integer batchSize = environment.getProperty("spring.jpa.properties.hibernate.jdbc.batch_size", Integer.class,
+				100);
+		if (batchSize > 0) {
+			jpaProperties.put("hibernate.jdbc.batch_size", batchSize);
+			jpaProperties.put("hibernate.order_inserts", "true");
+			jpaProperties.put("hibernate.order_updates", "true");
+		}
+		jpaProperties.put("hibernate.show_sql",
+				environment.getProperty("spring.jpa.properties.hibernate.show_sql", "false"));
+		jpaProperties.put("hibernate.format_sql",
+				environment.getProperty("spring.jpa.properties.hibernate.format_sql", "false"));
+		emfBean.setJpaProperties(jpaProperties);
+		return emfBean;
+
+	}
+
+	@Bean(name="batchTransactionManager")
+	public PlatformTransactionManager transactionManager() {
+		return new JpaTransactionManager(batchEntityManagerFactory().getObject());
+	}
+
+    @Bean
+    public MBeanExporter exporter() {
+        final MBeanExporter exporter = new MBeanExporter();
+        exporter.setExcludedBeans("batchDataSource");
+        return exporter;
+    }
+
+    @SuppressWarnings("deprecation")
+	@Bean
+	public SpringLiquibase liquibase(LiquibaseProperties liquibaseProperties) {
+		SpringLiquibase liquibase = new SpringLiquibase();
+		liquibase.setDataSource(batchDataSource());
+		liquibase.setChangeLog("classpath:config/liquibase/master.xml");
+		liquibase.setContexts(liquibaseProperties.getContexts());
+		liquibase.setDefaultSchema(liquibaseProperties.getDefaultSchema());
+		liquibase.setDropFirst(liquibaseProperties.isDropFirst());
+		if (environment.acceptsProfiles(Constants.PROFIL_NO_LIQUIBASE_SPRING)) {
+			liquibase.setShouldRun(false);
+		} else {
+			liquibase.setShouldRun(liquibaseProperties.isEnabled());
+			log.debug("Configuration de Liquibase");
+		}
+		return liquibase;
+	}
+}
+
+```
+
 
 
 

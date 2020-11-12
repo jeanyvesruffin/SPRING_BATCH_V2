@@ -1,5 +1,5 @@
 # ===================================================================
-# Spring Boot configuration for the "prod" profile.
+# Spring Boot configuration for the "dev" profile.
 #
 # Cette configuration surcharge le fichier application.yml.
 # ===================================================================
@@ -10,32 +10,24 @@
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
-logging:
-    level:
-        ROOT: INFO
-        clientBatchLoader: INFO
-
-server:
-    port: 8080
-    compression:
-        enabled: true
-        mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
-        min-response-size: 1024
-
 spring:
+    profiles:
+        active: dev
     devtools:
         restart:
-            enabled: false
+            enabled: true
+    jackson:
+        serialization.indent_output: true
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:h2:file:./h2db/db/clientbatchloader-prod;
+        url: jdbc:h2:file:./h2db/db/clientbatchloader-dev;
         username: ClientBatchLoader
         password:
     h2:
         console:
             enabled: true
     jpa:
-        database-platform: clientbatchloader.config.FixedH2Dialect
+        database-platform: com.ruffin.SPRING_BATCH_V2.config.FixedH2Dialect
         database: H2
         show-sql: true
         properties:
@@ -44,7 +36,11 @@ spring:
             hibernate.cache.use_query_cache: false
             hibernate.generate_statistics: true
     liquibase:
-        contexts: prod
+        contexts: dev
+        drop-first: true
+
+server:
+    port: 8080
 
 # ===================================================================
 # Application specific properties
