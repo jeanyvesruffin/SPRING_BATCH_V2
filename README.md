@@ -4,9 +4,6 @@
 
 Java version 15.0.1
 
-
-
-
 # Spring batch ?
 
 Spring Batch permet l'execution de traitement programmme appele job.
@@ -72,7 +69,7 @@ git commit -am "init projet"
 
 ```cmd
 git branch -M main
-git remote add origin https://github.com/jeanyvesruffin/BATCH_V2.git
+git remote add origin https://github.com/jeanyvesruffin/SPRING_BATCH_V2.git
 git push -u origin main
 ```
 
