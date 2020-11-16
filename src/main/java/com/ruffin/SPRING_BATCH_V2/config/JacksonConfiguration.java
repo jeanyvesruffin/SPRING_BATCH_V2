@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class JacksonConfiguration {
 
     /*
-     * Support for Hibernate types in Jackson.
+     * Prise en charge des types Hibernate dans Jackson.
      */
     @Bean
     public Hibernate5Module hibernate5Module() {

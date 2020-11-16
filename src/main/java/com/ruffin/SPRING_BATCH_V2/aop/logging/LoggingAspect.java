@@ -15,7 +15,8 @@ import org.springframework.core.env.Environment;
 import com.ruffin.SPRING_BATCH_V2.config.Constants;
 
 /**
- * Aspect for logging execution of service and repository Spring components.
+ * Aspect pour la journalisation de l'exécution des composants du service et du
+ * référentiel Spring.
  */
 @Aspect
 public class LoggingAspect {
@@ -29,32 +30,32 @@ public class LoggingAspect {
 	}
 
 	/**
-	 * Pointcut that matches all repositories, services and Web REST endpoints.
+	 * Pointcut qui correspond à tous les référentiels, services et points de
+	 * terminaison Web REST.
 	 */
-    @Pointcut("within(@org.springframework.stereotype.Service *)" +
-            " || within(@org.springframework.web.bind.annotation.RestController *)")
+	@Pointcut("within(@org.springframework.stereotype.Service *)"
+			+ " || within(@org.springframework.web.bind.annotation.RestController *)")
 	public void springBeanPointcut() {
-		// Method is empty as this is just a Pointcut, the implementations are in the
-		// advices.
+		// La méthode est vide car il ne s'agit que d'un Pointcut, les implémentations
+		// sont dans les advices.
 	}
 
 	/**
-	 * Pointcut that matches all Spring beans in the application's main packages.
+	 * Pointcut qui correspond à tous les beans Spring dans les packages principaux
+	 * de l'application.
 	 */
-    @Pointcut("within(com.pluralsight.springbatch.patientbatchloader.service..*)"+
-            " || within(com.pluralsight.springbatch.patientbatchloader.web.rest..*)")
+	@Pointcut("within(com.pluralsight.springbatch.patientbatchloader.service..*)"
+			+ " || within(com.pluralsight.springbatch.patientbatchloader.web.rest..*)")
 	public void applicationPackagePointcut() {
-		// Method is empty as this is just a Pointcut, the implementations are in the
-		// advices.
+		// La méthode est vide car il ne s'agit que d'un Pointcut, les implémentations
+		// sont dans les advices.
 	}
 
 	/**
-	 * Advice that logs methods throwing exceptions.
+	 * Advices qui enregistre les méthodes lançant des exceptions.
 	 *
-	 * @param joinPoint
-	 *            join point for advice
-	 * @param e
-	 *            exception
+	 * @param joinPoint join point for advice
+	 * @param e         exception
 	 */
 	@SuppressWarnings("deprecation")
 	@AfterThrowing(pointcut = "applicationPackagePointcut() && springBeanPointcut()", throwing = "e")
@@ -71,13 +72,11 @@ public class LoggingAspect {
 	}
 
 	/**
-	 * Advice that logs when a method is entered and exited.
+	 * Advice qui enregistre lorsqu'une méthode est entrée et sortie.
 	 *
-	 * @param joinPoint
-	 *            join point for advice
+	 * @param joinPoint join point for advice
 	 * @return result
-	 * @throws Throwable
-	 *             throws IllegalArgumentException
+	 * @throws Throwable throws IllegalArgumentException
 	 */
 	@Around("applicationPackagePointcut() && springBeanPointcut()")
 	public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {

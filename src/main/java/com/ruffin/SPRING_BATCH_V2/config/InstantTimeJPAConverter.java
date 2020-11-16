@@ -7,8 +7,8 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
 /**
- * Converter for supporting new time apis with H2. Provides conversion between
- * Instant and Timestamp.
+ * Convertisseur pour prendre en charge de nouvelles API de temps avec H2.
+ * Fournit une conversion entre Instant et Timestamp.
  */
 @Converter(autoApply = true)
 public class InstantTimeJPAConverter implements AttributeConverter<Instant, Timestamp> {

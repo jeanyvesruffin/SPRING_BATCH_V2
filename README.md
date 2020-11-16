@@ -530,6 +530,136 @@ public class DatabaseConfiguration {
 
 ```
 
+# Creation a Spring Batch application
+
+## Ajouts des dependances Spring Batch
+
+```xml
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-batch</artifactId>
+	<version>2.4.0</version>
+</dependency>
+<dependency>
+	<groupId>org.springframework.batch</groupId>
+	<artifactId>spring-batch-test</artifactId>
+	<version>4.3.0</version>
+	<scope>test</scope>
+</dependency>
+```
+
+## Configuration de Spring Batch
+
+Definition de la strategie Spring Batch.
+
+1 . Declaration des attributs membres aux classes Spring Batch
+
+* JobRepository est responsable de la persitance des donneese.
+* JobExplorer fournis les getters et setters pour explorer les donnees du JobRepository.
+* JobLauncher execute le job avec les parametres donnees.
+
+2 . Cablage (Override) batchTransactionManager et batchDataSource
+
+3 . Definition de l'implementation BatchConfigurer.
+
+4. Creation des methodes createJobLauncher,afterPropertiesSet et createJobRepository
+
+*package com.ruffin.SPRING_BATCH_V2.config;*
+
+```java
+
+@Component
+@EnableBatchProcessing
+public class BatchConfiguration implements BatchConfigurer {
+
+	private JobRepository jobRepository;
+	private JobExplorer jobExplorer;
+	private JobLauncher jobLauncher;
+
+	@Autowired
+	@Qualifier(value = "batchTransactionManager")
+	private PlatformTransactionManager batchTransactionManager;
+
+	@Autowired
+	@Qualifier(value = "batchDataSource")
+	private DataSource batchDataSource;
+
+	@Override
+	public JobRepository getJobRepository() throws Exception {
+		return this.jobRepository;
+	}
+
+	@Override
+	public PlatformTransactionManager getTransactionManager() throws Exception {
+		return this.batchTransactionManager;
+	}
+
+	@Override
+	public JobLauncher getJobLauncher() throws Exception {
+		return this.jobLauncher;
+	}
+
+	@Override
+	public JobExplorer getJobExplorer() throws Exception {
+		return this.jobExplorer;
+	}
+
+	protected JobLauncher createJobLauncher() throws Exception {
+		SimpleJobLauncher jobLauncher = new SimpleJobLauncher();
+		jobLauncher.setJobRepository(jobRepository);
+		jobLauncher.afterPropertiesSet();
+		return jobLauncher;
+	}
+
+	protected JobRepository createJobRepository() throws Exception {
+		JobRepositoryFactoryBean factory = new JobRepositoryFactoryBean();
+		factory.setDataSource(this.batchDataSource);
+		factory.setTransactionManager(getTransactionManager());
+		factory.afterPropertiesSet();
+		return factory.getObject();
+
+	}
+
+	@PostConstruct
+	public void afterPropertiesSet() throws Exception {
+		this.jobRepository = createJobRepository();
+		JobExplorerFactoryBean jobExplorerFactoryBean = new JobExplorerFactoryBean();
+		jobExplorerFactoryBean.setDataSource(this.batchDataSource);
+		jobExplorerFactoryBean.afterPropertiesSet();
+		this.jobExplorer = jobExplorerFactoryBean.getObject();
+		this.jobLauncher = createJobLauncher();
+
+	}
+}
+
+```
+
+## Desactivation temporaire de spring batch dans le fichier de configuration application.yml
+
+````yml
+spring:
+    application:
+        name: ClientBatchLoader
+    batch:
+       job:
+          enabled: false
+```
+
+Configuration de l'inputPath ou se trouvera le fichier input csv a traiter.
+Dans applciation.yml
+
+```yml
+
+application:
+   batch:
+      inputPath: D:\PROGRAMMING\SPRING_BATCH_V2\SPRING_BATCH_V2\src\main\java\com\ruffin\SPRING_BATCH_V2\data
+
+```
+
+Configuration de l'inputPath ou se trouvera le fichier input csv a traiter.
+Dans applicationProperties.java
+
+
 
 
 
@@ -561,3 +691,6 @@ mvn dependency:tree
 Plan B qui fonctionne car le problemee viens de l'IDE
 
 https://stackoverflow.com/questions/63755390/multiple-slf4j-bindings-with-m2e-in-eclipse-2020-06?noredirect=1#comment112749280_63755390
+
+ERROR Jackson
+Solve ajout argument --add-opens java.base/java.lang=ALL-UNNAMED

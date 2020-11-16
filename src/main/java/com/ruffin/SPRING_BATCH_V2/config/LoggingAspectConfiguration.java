@@ -7,13 +7,13 @@ import org.springframework.core.env.Environment;
 
 import com.ruffin.SPRING_BATCH_V2.aop.logging.LoggingAspect;
 
-
-
 /**
- * Enables the logging aspect. If eventually using this for production, its
- * recommended to annotate the class for the Spring Profile "dev" only so that
- * the logging aspect isn't applied in production mode.
+ * Activation de l'aspect journalisation. Si vous l'utilisez finalement pour la
+ * production, il est recommandé d'annoter la classe pour le profil Spring "dev"
+ * uniquement afin que l'aspect journalisation ne soit pas appliqué en mode
+ * production.
  */
+
 @Configuration
 @EnableAspectJAutoProxy
 public class LoggingAspectConfiguration {

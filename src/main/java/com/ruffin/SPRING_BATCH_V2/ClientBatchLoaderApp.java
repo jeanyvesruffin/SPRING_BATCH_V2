@@ -8,12 +8,12 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.context.properties.ConfigurationPropertiesReportEndpoint.ApplicationConfigurationProperties;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.env.Environment;
 
+import com.ruffin.SPRING_BATCH_V2.config.ApplicationProperties;
 import com.ruffin.SPRING_BATCH_V2.config.Constants;
 import com.ruffin.SPRING_BATCH_V2.config.DefaultProfileUtil;
 
@@ -24,7 +24,7 @@ import com.ruffin.SPRING_BATCH_V2.config.DefaultProfileUtil;
  */
 
 @SpringBootApplication
-@EnableConfigurationProperties({ LiquibaseProperties.class, ApplicationConfigurationProperties.class })
+@EnableConfigurationProperties({ LiquibaseProperties.class, ApplicationProperties.class })
 public class ClientBatchLoaderApp {
 
 	private Environment environment;

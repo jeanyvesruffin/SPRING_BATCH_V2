@@ -15,6 +15,9 @@
 spring:
     application:
         name: ClientBatchLoader
+    batch:
+       job:
+          enabled: false
     profiles:
         # La valeur commentée pour ʻactive` peut être remplacée par des profils Spring valides à charger.
         # Sinon, elle sera remplie par maven lors de la construction du fichier WAR.
@@ -44,3 +47,8 @@ management:
 # ===================================================================
 # Application specific properties
 # ===================================================================
+
+application:
+   batch:
+      inputPath: D:/PROGRAMMING/SPRING_BATCH_V2/SPRING_BATCH_V2/src/main/java/com/ruffin/SPRING_BATCH_V2/data
+
