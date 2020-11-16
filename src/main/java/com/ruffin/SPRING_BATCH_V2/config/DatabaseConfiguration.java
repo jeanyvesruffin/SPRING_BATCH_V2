@@ -102,7 +102,7 @@ public class DatabaseConfiguration {
         return exporter;
     }
 
-    @SuppressWarnings("deprecation")
+
 	@Bean
 	public SpringLiquibase liquibase(LiquibaseProperties liquibaseProperties) {
 		SpringLiquibase liquibase = new SpringLiquibase();

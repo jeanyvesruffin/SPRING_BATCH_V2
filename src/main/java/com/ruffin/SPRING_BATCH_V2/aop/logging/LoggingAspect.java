@@ -44,8 +44,8 @@ public class LoggingAspect {
 	 * Pointcut qui correspond à tous les beans Spring dans les packages principaux
 	 * de l'application.
 	 */
-	@Pointcut("within(com.pluralsight.springbatch.patientbatchloader.service..*)"
-			+ " || within(com.pluralsight.springbatch.patientbatchloader.web.rest..*)")
+		@Pointcut("within(com.ruffin.SPRING_BATCH_V2.service..*)"
+			+ " || within(com.ruffin.SPRING_BATCH_V2.web.rest..*)")
 	public void applicationPackagePointcut() {
 		// La méthode est vide car il ne s'agit que d'un Pointcut, les implémentations
 		// sont dans les advices.
